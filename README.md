@@ -2,7 +2,7 @@
 
 Talk to a [LiveKit](https://livekit.io/) voice agent from a Streamlit app, in real time.
 
-![The example app: the user enters their name, starts a conversation, and asks the agent for a fun fact while the meters and transcript update live](https://raw.githubusercontent.com/dataprofessor/streamlit-livekit/main/docs/demo.gif)
+<img src="https://raw.githubusercontent.com/dataprofessor/streamlit-livekit/main/docs/demo.gif" width="500">
 
 `voice_agent()` is a [Streamlit custom component (v2)](https://docs.streamlit.io/develop/api-reference/custom-components/st.components.v2.component). It renders:
 
