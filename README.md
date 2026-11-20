@@ -6,6 +6,8 @@ See it in action: a user enters their name, starts a conversation, and asks the 
 
 <img src="https://raw.githubusercontent.com/dataprofessor/streamlit-livekit/main/docs/demo.gif" width="550">
 
+## How it works
+
 `voice_agent()` is a Python function that connects your Streamlit app to a LiveKit voice agent. It is built with [Streamlit custom components (v2)](https://docs.streamlit.io/develop/api-reference/custom-components/st.components.v2.component) and renders:
 
 - Start and End buttons plus a Mute button.
