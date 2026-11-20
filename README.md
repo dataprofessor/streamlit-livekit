@@ -28,7 +28,10 @@ It needs Python 3.10+ and Streamlit 1.51+. You also need a [LiveKit Cloud](https
 import streamlit as st
 from streamlit_livekit import voice_agent
 
-# "my-agent" must match the agent_name your agent sets in its code
+# "my-agent" is the name your agent registers under on LiveKit. You choose it
+# in the agent's code, e.g. @server.rtc_session(agent_name="my-agent").
+# LiveKit sends the agent with that name into each new conversation, so the
+# two must match. Otherwise no agent joins and the panel keeps waiting.
 result = voice_agent("my-agent")
 
 st.write(result.state)  # "idle" | "connecting" | "connected" | "ended"
