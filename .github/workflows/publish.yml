@@ -1,0 +1,71 @@
+# Publishes streamlit-livekit to PyPI when a GitHub release is published.
+#
+# Uses PyPI trusted publishing (OIDC), so no API token is stored in GitHub.
+# PyPI must list this repository, this workflow file (publish.yml), and the
+# `pypi` environment as a trusted publisher for the project.
+#
+# To release: bump `version` in pyproject.toml, commit, then publish a GitHub
+# release whose tag is that version with a leading "v" (e.g. v0.1.0).
+
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build distributions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: astral-sh/setup-uv@v10
+
+      - name: Check the release tag matches the package version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version=$(uv version --short)
+          if [ "$TAG" != "v$version" ]; then
+            echo "::error::Release tag $TAG doesn't match pyproject.toml version $version (expected v$version)"
+            exit 1
+          fi
+
+      - name: Build
+        run: uv build
+
+      - name: Check the wheel ships the component assets
+        run: |
+          contents=$(unzip -l dist/*.whl)
+          for f in streamlit_livekit/pyproject.toml \
+                   streamlit_livekit/frontend/voice_agent.html \
+                   streamlit_livekit/frontend/voice_agent.css \
+                   streamlit_livekit/frontend/voice_agent.js; do
+            echo "$contents" | grep -q "$f" || { echo "::error::$f is missing from the wheel"; exit 1; }
+          done
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/streamlit-livekit/
+    permissions:
+      id-token: write # trusted publishing
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1

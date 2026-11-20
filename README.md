@@ -90,6 +90,19 @@ The component lives in [`streamlit_livekit/`](streamlit_livekit/): the Python AP
 
 Format and lint with `uv run ruff format` and `uv run ruff check`.
 
+### Releasing
+
+Publishing a GitHub release publishes the package to PyPI through [`.github/workflows/publish.yml`](.github/workflows/publish.yml), using [trusted publishing](https://docs.pypi.org/trusted-publishers/), so no API token is stored. To release:
+
+1. Bump `version` in `pyproject.toml` (or run `uv version --bump patch`), and commit.
+1. Publish a GitHub release tagged with that version and a leading `v`, e.g. `v0.1.1`:
+
+   ```console
+   gh release create v0.1.1 --generate-notes
+   ```
+
+The workflow fails without publishing if the tag doesn't match the version.
+
 ## Notes
 
 - The browser loads `livekit-client` from jsDelivr the first time you start a conversation.
