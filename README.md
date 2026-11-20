@@ -2,6 +2,8 @@
 
 Talk to a [LiveKit](https://livekit.io/) voice agent from a Streamlit app, in real time.
 
+![The example app: the user enters their name, starts a conversation, and asks the agent for a fun fact while the meters and transcript update live](https://raw.githubusercontent.com/dataprofessor/streamlit-livekit/main/docs/demo.gif)
+
 `voice_agent()` is a [Streamlit custom component (v2)](https://docs.streamlit.io/develop/api-reference/custom-components/st.components.v2.component). It renders:
 
 - Start and End buttons plus a Mute button.
@@ -115,19 +117,6 @@ uv run streamlit run example/streamlit_app.py
 The component lives in [`streamlit_livekit/`](streamlit_livekit/): the Python API is in `__init__.py`, and the browser side is in `frontend/` (HTML, CSS, and JS). Streamlit serves the CSS and JS from the `asset_dir` declared in `streamlit_livekit/pyproject.toml`. It picks up JS and CSS edits on reload, but changes to the Python code need a restart of `streamlit run`.
 
 Run the tests with `uv run pytest`, and format and lint with `uv run ruff format` and `uv run ruff check`.
-
-### Releasing
-
-Publishing a GitHub release publishes the package to PyPI through [`.github/workflows/publish.yml`](.github/workflows/publish.yml), using [trusted publishing](https://docs.pypi.org/trusted-publishers/), so no API token is stored. To release:
-
-1. Bump `version` in `pyproject.toml` (or run `uv version --bump patch`), and commit.
-1. Publish a GitHub release tagged with that version and a leading `v`, e.g. `v0.1.1`:
-
-   ```console
-   gh release create v0.1.1 --generate-notes
-   ```
-
-The workflow fails without publishing if the tag doesn't match the version.
 
 ## Notes
 
