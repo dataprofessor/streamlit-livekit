@@ -1,6 +1,6 @@
 # streamlit-livekit
 
-Talk to a [LiveKit](https://livekit.io/) voice agent from a Streamlit app, in real time.
+`streamlit-livekit` is a Python library that adds real-time voice conversations with a [LiveKit](https://livekit.io/) agent to your [Streamlit](https://streamlit.io/) app.
 
 <img src="https://raw.githubusercontent.com/dataprofessor/streamlit-livekit/main/docs/demo.gif" width="550">
 
