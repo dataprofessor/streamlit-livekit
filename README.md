@@ -1,0 +1,101 @@
+# streamlit-livekit
+
+Talk to a [LiveKit](https://livekit.io/) voice agent from a Streamlit app, in real time.
+
+`voice_agent()` is a [Streamlit custom component (v2)](https://docs.streamlit.io/develop/api-reference/custom-components/st.components.v2.component). It renders:
+
+- Start and End buttons plus a Mute button.
+- Audio meters for you and for the agent, along with the agent's state (listening, thinking, speaking).
+- A live transcript.
+
+It follows the app's light, dark, or custom theme.
+
+Audio streams directly between the browser and LiveKit through [`livekit-client`](https://github.com/livekit/client-sdk-js). Python only creates the access token. That token dispatches your agent to a fresh room for each conversation.
+
+## Installation
+
+Until it's published on PyPI, install it from GitHub:
+
+```console
+pip install git+https://github.com/dataprofessor/streamlit-livekit
+```
+
+It needs Python 3.10+ and Streamlit 1.51+. You also need a [LiveKit Cloud](https://cloud.livekit.io/) project (or a self-hosted LiveKit server) and an agent built with [LiveKit Agents](https://docs.livekit.io/agents/).
+
+## Usage
+
+```python
+import streamlit as st
+from streamlit_livekit import voice_agent
+
+result = voice_agent("my-agent")  # the agent_name your agent registers with
+
+st.write(result.state)  # "idle" | "connecting" | "connected" | "ended"
+st.write(result.transcript)  # [{"role": "user" | "agent", "text": "..."}]
+
+# Let the user save the conversation
+st.download_button("Export transcript", result.to_text(), file_name="transcript.txt")
+```
+
+Credentials come from `LIVEKIT_URL`, `LIVEKIT_API_KEY`, and `LIVEKIT_API_SECRET`, or from the `url`, `api_key`, and `api_secret` arguments.
+
+### Talking to an agent on your machine
+
+`lk agent dev` registers under a random `dev-...` deployment unless you name one. Name it, and pass the same name to `voice_agent()`:
+
+```console
+lk agent dev --deployment local-dev
+```
+
+```python
+voice_agent("my-agent", deployment="local-dev")
+```
+
+Leave `deployment` empty to reach the production deployment on LiveKit Cloud.
+
+## API
+
+`voice_agent(agent_name, *, deployment="", url=None, api_key=None, api_secret=None, room_prefix="streamlit", token_ttl=timedelta(minutes=15), key="voice_agent")`
+
+It returns a `VoiceAgentResult` with these fields:
+
+| Field / method | Description |
+|---|---|
+| `state` | `"idle"`, `"connecting"`, `"connected"`, or `"ended"` |
+| `transcript` | Final lines so far, as `[{"role": "user" \| "agent", "text": ...}]` |
+| `room` | The LiveKit room for the current conversation |
+| `to_text()` | The transcript as plain text, one `You:` or `Agent:` line per turn |
+
+Each conversation gets its own room, because LiveKit only dispatches an agent when a room is created. The panel's "New conversation" button asks Python for a fresh room and token.
+
+## Example app
+
+[`example/streamlit_app.py`](example/streamlit_app.py) is a complete page with transcript export. Copy `example/.streamlit/secrets.toml.example` to `secrets.toml`, fill in your LiveKit credentials, start your agent, and run:
+
+```console
+cd example
+streamlit run streamlit_app.py
+```
+
+## Development
+
+```console
+git clone https://github.com/dataprofessor/streamlit-livekit
+cd streamlit-livekit
+uv sync
+uv run streamlit run example/streamlit_app.py
+```
+
+The component lives in [`streamlit_livekit/`](streamlit_livekit/): the Python API is in `__init__.py`, and the browser side is in `frontend/` (HTML, CSS, and JS). Streamlit serves the CSS and JS from the `asset_dir` declared in `streamlit_livekit/pyproject.toml`. It picks up JS and CSS edits on reload, but changes to the Python code need a restart of `streamlit run`.
+
+Format and lint with `uv run ruff format` and `uv run ruff check`.
+
+## Notes
+
+- The browser loads `livekit-client` from jsDelivr the first time you start a conversation.
+- Microphone access needs a secure context: `localhost` or HTTPS.
+- `result.transcript` gets only final lines, so Streamlit doesn't rerun on every partial word. The panel itself shows the partial words as they arrive.
+
+## License
+
+MIT
