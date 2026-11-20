@@ -4,7 +4,7 @@ Talk to a [LiveKit](https://livekit.io/) voice agent from a Streamlit app, in re
 
 <img src="https://raw.githubusercontent.com/dataprofessor/streamlit-livekit/main/docs/demo.gif" width="550">
 
-`voice_agent()` is a [Streamlit custom component (v2)](https://docs.streamlit.io/develop/api-reference/custom-components/st.components.v2.component). It renders:
+`voice_agent()` is a Python function that connects your app to a LiveKit voice agent. It is built with [Streamlit custom components (v2)](https://docs.streamlit.io/develop/api-reference/custom-components/st.components.v2.component) and renders:
 
 - Start and End buttons plus a Mute button.
 - Audio meters for you and for the agent, along with the agent's state (listening, thinking, speaking).
