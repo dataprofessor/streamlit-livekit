@@ -28,7 +28,8 @@ It needs Python 3.10+ and Streamlit 1.51+. You also need a [LiveKit Cloud](https
 import streamlit as st
 from streamlit_livekit import voice_agent
 
-result = voice_agent("my-agent")  # the agent_name your agent registers with
+# "my-agent" must match the agent_name your agent sets in its code
+result = voice_agent("my-agent")
 
 st.write(result.state)  # "idle" | "connecting" | "connected" | "ended"
 st.write(result.transcript)  # [{"role": "user" | "agent", "text": "..."}]
