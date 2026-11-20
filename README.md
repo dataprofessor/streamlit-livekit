@@ -14,10 +14,8 @@ Audio streams directly between the browser and LiveKit through [`livekit-client`
 
 ## Installation
 
-Until it's published on PyPI, install it from GitHub:
-
 ```console
-pip install git+https://github.com/dataprofessor/streamlit-livekit
+pip install streamlit-livekit
 ```
 
 It needs Python 3.10+ and Streamlit 1.51+. You also need a [LiveKit Cloud](https://cloud.livekit.io/) project (or a self-hosted LiveKit server) and an agent built with [LiveKit Agents](https://docs.livekit.io/agents/).
