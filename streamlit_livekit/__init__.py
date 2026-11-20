@@ -8,6 +8,7 @@ creates the access token that dispatches the agent to a fresh room.
 from __future__ import annotations
 
 import functools
+import json
 import os
 import uuid
 from dataclasses import dataclass, field
@@ -60,10 +61,20 @@ class VoiceAgentResult:
         )
 
 
+def _encode_metadata(metadata: dict[str, Any] | str | None) -> str:
+    if metadata is None:
+        return ""
+    if isinstance(metadata, str):
+        return metadata
+    # Stable encoding, so the same dict always gives the same string
+    return json.dumps(metadata, sort_keys=True, separators=(",", ":"))
+
+
 def _create_connection(
     *,
     agent_name: str,
     deployment: str,
+    metadata: str,
     url: str,
     api_key: str,
     api_secret: str,
@@ -82,7 +93,11 @@ def _create_connection(
         .with_room_config(
             api.RoomConfiguration(
                 agents=[
-                    api.RoomAgentDispatch(agent_name=agent_name, deployment=deployment)
+                    api.RoomAgentDispatch(
+                        agent_name=agent_name,
+                        deployment=deployment,
+                        metadata=metadata,
+                    )
                 ]
             )
         )
@@ -95,6 +110,7 @@ def _create_connection(
         "room": room,
         "agent_name": agent_name,
         "deployment": deployment,
+        "metadata": metadata,
     }
 
 
@@ -102,6 +118,7 @@ def voice_agent(
     agent_name: str,
     *,
     deployment: str = "",
+    metadata: dict[str, Any] | str | None = None,
     url: str | None = None,
     api_key: str | None = None,
     api_secret: str | None = None,
@@ -120,6 +137,13 @@ def voice_agent(
         The deployment to dispatch to. ``""`` is the production deployment on
         LiveKit Cloud; use the name passed to ``lk agent dev --deployment``
         to reach an agent running on your machine.
+    metadata:
+        Context for the agent, such as the user's name or the app's settings.
+        A dict is sent as JSON; a string is sent as is. The agent reads it as
+        ``ctx.job.metadata`` in its entrypoint. Metadata is fixed when a
+        conversation's room is created: a change made while the panel is idle
+        applies right away, and one made during or after a conversation applies
+        to the next one.
     url, api_key, api_secret:
         LiveKit project credentials. Default to the ``LIVEKIT_URL``,
         ``LIVEKIT_API_KEY`` and ``LIVEKIT_API_SECRET`` environment variables.
@@ -148,12 +172,15 @@ def voice_agent(
             "or pass url, api_key and api_secret."
         )
 
+    metadata_str = _encode_metadata(metadata)
     conn_key = f"{key}__connection"
+    state_key = f"{key}__state"
 
     def new_connection() -> None:
         st.session_state[conn_key] = _create_connection(
             agent_name=agent_name,
             deployment=deployment,
+            metadata=metadata_str,
             url=url,
             api_key=api_key,
             api_secret=api_secret,
@@ -169,6 +196,13 @@ def voice_agent(
         or conn["url"] != url
     ):
         new_connection()
+    elif (
+        conn["metadata"] != metadata_str
+        and st.session_state.get(state_key, "idle") == "idle"
+    ):
+        # Nothing has started yet, so the panel can switch to a token that
+        # carries the new metadata. A live or ended conversation is left alone.
+        new_connection()
 
     conn = st.session_state[conn_key]
     result = _component()(
@@ -180,8 +214,10 @@ def voice_agent(
         # Runs before the rerun, so the panel gets the new token right away
         on_new_conversation_change=new_connection,
     )
+    state = getattr(result, "connection_state", None) or "idle"
+    st.session_state[state_key] = state
     return VoiceAgentResult(
-        state=getattr(result, "connection_state", None) or "idle",
+        state=state,
         transcript=list(getattr(result, "transcript", None) or []),
         room=conn["room"],
     )

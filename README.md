@@ -51,9 +51,37 @@ voice_agent("my-agent", deployment="local-dev")
 
 Leave `deployment` empty to reach the production deployment on LiveKit Cloud.
 
+### Passing context to your agent
+
+Send anything the agent should know as `metadata`, such as the user's name, a persona picked in the sidebar, or the app's settings:
+
+```python
+name = st.text_input("Your name")
+persona = st.selectbox("Persona", ["Friendly", "Concise", "Pirate"])
+
+voice_agent("my-agent", metadata={"user_name": name, "persona": persona})
+```
+
+The dict goes to the agent as JSON job metadata when a conversation starts. Read it in the agent's entrypoint:
+
+```python
+import json
+
+
+@server.rtc_session(agent_name="my-agent")
+async def my_agent(ctx: JobContext):
+    context = json.loads(ctx.job.metadata or "{}")
+    user_name = context.get("user_name")
+    ...
+```
+
+Metadata is fixed when a conversation's room is created, because that's when LiveKit dispatches the agent. If it changes while the panel is idle, the panel switches to a fresh token right away. If it changes during or after a conversation, the live call is left alone and the new value applies to the next conversation.
+
+[LiveKit simulations](https://docs.livekit.io/testing/simulations/) can't set job metadata. To keep an agent that reads it testable, put the same values in the scenario's `userdata` and read them from `ctx.simulation_context()` during a simulation.
+
 ## API
 
-`voice_agent(agent_name, *, deployment="", url=None, api_key=None, api_secret=None, room_prefix="streamlit", token_ttl=timedelta(minutes=15), key="voice_agent")`
+`voice_agent(agent_name, *, deployment="", metadata=None, url=None, api_key=None, api_secret=None, room_prefix="streamlit", token_ttl=timedelta(minutes=15), key="voice_agent")`
 
 It returns a `VoiceAgentResult` with these fields:
 
@@ -86,7 +114,7 @@ uv run streamlit run example/streamlit_app.py
 
 The component lives in [`streamlit_livekit/`](streamlit_livekit/): the Python API is in `__init__.py`, and the browser side is in `frontend/` (HTML, CSS, and JS). Streamlit serves the CSS and JS from the `asset_dir` declared in `streamlit_livekit/pyproject.toml`. It picks up JS and CSS edits on reload, but changes to the Python code need a restart of `streamlit run`.
 
-Format and lint with `uv run ruff format` and `uv run ruff check`.
+Run the tests with `uv run pytest`, and format and lint with `uv run ruff format` and `uv run ruff check`.
 
 ### Releasing
 

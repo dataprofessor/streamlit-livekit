@@ -2,7 +2,7 @@
 # assets. asset_dir is relative to this file.
 [project]
 name = "streamlit-livekit"
-version = "0.1.0"
+version = "0.1.1"
 
 [[tool.streamlit.component.components]]
 name = "voice_agent"

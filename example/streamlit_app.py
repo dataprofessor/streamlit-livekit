@@ -31,14 +31,26 @@ AGENT_NAME = "my-agent"
 # on LiveKit Cloud.
 AGENT_DEPLOYMENT = "local-dev"
 
-st.set_page_config(page_title="Voice agent", page_icon="🎙️")
-st.title("🎙️ Voice agent")
+st.set_page_config(page_title="Voice agent", page_icon=":material/mic:")
+st.title(":material/mic: Voice agent")
 st.caption(
     "Audio streams directly between your browser and LiveKit. "
     "Streamlit only issues the token."
 )
 
-result = voice_agent(AGENT_NAME, deployment=AGENT_DEPLOYMENT)
+# Context for the agent, sent as job metadata when a conversation starts.
+# The agent reads it with json.loads(ctx.job.metadata).
+user_name = st.text_input(
+    "Your name",
+    placeholder="Optional. The agent will greet you by name.",
+    max_chars=60,
+)
+
+result = voice_agent(
+    AGENT_NAME,
+    deployment=AGENT_DEPLOYMENT,
+    metadata={"user_name": user_name.strip()} if user_name.strip() else None,
+)
 
 # The transcript already lives in Python, so exporting it is a native download.
 # on_click="ignore" skips the rerun; the call would survive one anyway.

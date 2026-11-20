@@ -35,6 +35,9 @@ jobs:
             exit 1
           fi
 
+      - name: Run the tests
+        run: uv run --locked pytest -q
+
       - name: Check the classifiers are ones PyPI accepts
         run: |
           uvx --python 3.12 --with trove-classifiers python - <<'PY'
