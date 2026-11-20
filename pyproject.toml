@@ -13,7 +13,6 @@ license-files = ["LICENSE"]
 authors = [{ name = "Chanin Nantasenamat", email = "dataprofessorofficial@gmail.com" }]
 keywords = ["streamlit", "livekit", "voice", "agents", "webrtc", "component"]
 classifiers = [
-    "Framework :: Streamlit",
     "Programming Language :: Python :: 3",
     "Topic :: Multimedia :: Sound/Audio :: Speech",
 ]

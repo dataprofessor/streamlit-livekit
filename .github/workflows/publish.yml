@@ -35,6 +35,17 @@ jobs:
             exit 1
           fi
 
+      - name: Check the classifiers are ones PyPI accepts
+        run: |
+          uvx --python 3.12 --with trove-classifiers python - <<'PY'
+          import sys, tomllib
+          from trove_classifiers import classifiers
+          bad = [c for c in tomllib.load(open("pyproject.toml", "rb"))["project"].get("classifiers", []) if c not in classifiers]
+          for c in bad:
+              print(f"::error::{c!r} is not a valid PyPI classifier")
+          sys.exit(1 if bad else 0)
+          PY
+
       - name: Build
         run: uv build
 
